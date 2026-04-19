@@ -5,18 +5,21 @@ AI-агент аналитик данных на базе GigaChat с ReAct ра
 ## Архитектура проекта
 
 ai_ds_agent/
-├── agent/
-│ └── main_agent.py # Основной класс агента (GigaChatAgent)
-├── monitoring/
-│ ├── evaluator.py # Оценка качества ответов (GigaChatJudge)
-│ └── metrics.py # Сбор метрик (MetricsCollector)
-├── tools/
-│ ├── data_analysis.py # Анализ корреляции
-│ ├── gigachat_llm.py # Клиент GigaChat API
-│ └── web_search.py # Веб-поиск через DuckDuckGo
-├── app.py # Веб-сервер + интерфейс
-├── .env # Переменные окружения (API ключи)
-└── requirements.txt # Зависимости Python
+  agent/
+    main_agent.py               # GigaChatAgent - основной класс агента
+
+  monitoring/
+    evaluator.py                # GigaChatJudge - оценка качества (полнота, точность, ясность)
+    metrics.py                  # MetricsCollector - перплексия, релевантность, задержка
+
+  tools/
+    data_analysis.py            # analyze_correlation() - корреляция Пирсона
+    gigachat_llm.py             # GigaChatLLM - низкоуровневый клиент API
+    web_search.py               # web_search() - поиск через DuckDuckGo
+
+  app.py                        # HTTP сервер + ThinkingAgent + веб-интерфейс
+  .env                          # GIGACHAT_CLIENT_ID, GIGACHAT_CLIENT_SECRET
+  requirements.txt              # Зависимости Python
 
 ## Компоненты системы
 
