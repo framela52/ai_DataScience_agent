@@ -3,7 +3,7 @@
 AI-агент аналитик данных на базе GigaChat с ReAct рассуждениями, веб-поиском, анализом корреляции и метриками качества.
 
 ## Архитектура проекта
-
+```
 ai_ds_agent/
   agent/
     main_agent.py               # GigaChatAgent - основной класс агента
@@ -20,7 +20,7 @@ ai_ds_agent/
   app.py                        # HTTP сервер + ThinkingAgent + веб-интерфейс
   .env                          # GIGACHAT_CLIENT_ID, GIGACHAT_CLIENT_SECRET
   requirements.txt              # Зависимости Python
-
+```
 ## Компоненты системы
 
 ### 1. Агент (`agent/main_agent.py`)
