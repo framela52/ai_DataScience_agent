@@ -1,0 +1,23 @@
+# Виртуальное окружение
+venv_ds/
+venv/
+__pycache__/
+*.pyc
+
+# Секреты и ключи
+.env
+*.pem
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
