@@ -43,9 +43,13 @@ class ThinkingAgent:
 """
     
     def process_query(self, query: str):
-        """Обработка запроса с вызовом инструментов"""
+        """Обработка запроса с многократным вызовом инструментов"""
         
-        prompt = f"""{self.tools_desc}
+        messages = []
+        max_iterations = 5
+        
+        # Начальный промпт
+        initial_prompt = f"""{self.tools_desc}
 
 Вопрос: {query}
 
@@ -53,86 +57,77 @@ class ThinkingAgent:
 Мысль: ...
 Действие: название_инструмента
 Вход: параметры
-Наблюдение: результат
 
-В конце дай Финальный ответ.
+После выполнения инструмента ты получишь Наблюдение с результатом.
+Затем продолжай рассуждения или дай Финальный ответ.
 
 Начни:"""
         
-        try:
-            result = self.llm.call(prompt=prompt)
-            full_response = result["choices"][0]["message"]["content"]
+        messages.append({"role": "user", "content": initial_prompt})
+        
+        for iteration in range(max_iterations):
+            # Вызываем LLM
+            result = self.llm.call(messages=messages)
+            response = result["choices"][0]["message"]["content"]
+            messages.append({"role": "assistant", "content": response})
             
-            thinking_lines = []
-            final_answer = ""
-            in_final = False
+            # Ищем действие в ответе
+            action_match = re.search(r'Действие:\s*(\w+)', response)
+            input_match = re.search(r'Вход:\s*(.+?)(?:\n|$)', response)
             
-            lines = full_response.split('\n')
-            i = 0
-            while i < len(lines):
-                line = lines[i].strip()
+            if action_match and input_match:
+                tool_name = action_match.group(1)
+                tool_input = input_match.group(1).strip().strip('"')
                 
-                if line.startswith('Действие:'):
-                    action = line.replace('Действие:', '').strip()
-                    if i + 1 < len(lines) and lines[i+1].strip().startswith('Вход:'):
-                        input_line = lines[i+1].strip().replace('Вход:', '').strip()
-                        tool_name = action.split()[0] if action.split() else action
-                        
-                        if tool_name in self.tools:
-                            try:
-                                tool_result = self.tools[tool_name](input_line)
-                                thinking_lines.append(line)
-                                thinking_lines.append(lines[i+1].strip())
-                                thinking_lines.append(f"Наблюдение: {tool_result}")
-                                i += 2
-                            except Exception as e:
-                                thinking_lines.append(line)
-                                thinking_lines.append(lines[i+1].strip())
-                                thinking_lines.append(f"Наблюдение: Ошибка: {str(e)}")
-                                i += 2
-                        else:
-                            thinking_lines.append(line)
-                            i += 1
-                    else:
-                        thinking_lines.append(line)
-                        i += 1
-                elif 'Финальный ответ:' in line:
-                    in_final = True
-                    final_answer = line.replace('Финальный ответ:', '').strip()
-                    i += 1
-                elif in_final:
-                    final_answer += ' ' + line.strip()
-                    i += 1
+                if tool_name in self.tools:
+                    print(f"Вызов инструмента: {tool_name}('{tool_input}')")
+                    try:
+                        tool_result = self.tools[tool_name](tool_input)
+                        print(f"Результат: {tool_result[:200]}...")
+                        # Добавляем наблюдение в диалог
+                        messages.append({
+                            "role": "user", 
+                            "content": f"Наблюдение: {tool_result}\n\nПродолжай рассуждения или дай Финальный ответ."
+                        })
+                    except Exception as e:
+                        messages.append({
+                            "role": "user",
+                            "content": f"Наблюдение: Ошибка при вызове {tool_name}: {str(e)}\n\nПопробуй другой подход или дай Финальный ответ."
+                        })
                 else:
-                    if line:
-                        thinking_lines.append(line)
-                    i += 1
-            
-            if not final_answer:
-                for line in reversed(lines):
-                    line_stripped = line.strip()
-                    if not any([
-                        line_stripped.startswith('Мысль:'),
-                        line_stripped.startswith('Действие:'),
-                        line_stripped.startswith('Вход:'),
-                        line_stripped.startswith('Наблюдение:'),
-                        line_stripped.startswith('Источник:')
-                    ]):
-                        final_answer = line_stripped
-                        break
-            
-            final_answer = self._clean_answer(final_answer)
-            
-            return {
-                "thinking": '\n'.join(thinking_lines),
-                "answer": final_answer
-            }
-            
-        except Exception as e:
-            return {
-                "thinking": f"Ошибка: {str(e)}",
-                "answer": f"Ошибка: {str(e)}"
-            }
+                    # Инструмент не найден, просто продолжаем
+                    messages.append({
+                        "role": "user",
+                        "content": f"Инструмент {tool_name} не найден. Используй только: {', '.join(self.tools.keys())}"
+                    })
+            else:
+                # Нет действия - значит это финальный ответ
+                break
+        
+        # Извлекаем финальный ответ из последнего сообщения ассистента
+        final_answer = ""
+        thinking_lines = []
+        
+        for msg in messages:
+            if msg["role"] == "assistant":
+                content = msg["content"]
+                if "Финальный ответ:" in content:
+                    final_answer = content.split("Финальный ответ:", 1)[1].strip()
+                thinking_lines.append(content)
+        
+        if not final_answer:
+            # Берем последнее сообщение ассистента как ответ
+            for msg in reversed(messages):
+                if msg["role"] == "assistant":
+                    final_answer = msg["content"]
+                    break
+        
+        final_answer = self._clean_answer(final_answer)
+        
+        return {
+            "thinking": '\n\n'.join(thinking_lines),
+            "answer": final_answer
+        }
     
     def _clean_answer(self, text: str) -> str:
         text = re.sub(r'\.{3,}$', '', text)
