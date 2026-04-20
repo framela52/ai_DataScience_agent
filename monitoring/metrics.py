@@ -67,8 +67,7 @@ class MetricsCollector:
         except:
             return 0.7
     
-    def evaluate_quality_metrics(self, query: str, response: str) -> Dict[str, float]:
-        """Оригинальный judge (уже работает)"""
+    def evaluate_quality_metrics(self, query: str, response: str) -> Dict[str, float]:       
         return self.judge.evaluate_response(query, response)
     
     def collect(self, query: str, response: str, latency_ms: float, error: bool = False) -> Dict:

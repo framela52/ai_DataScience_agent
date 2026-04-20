@@ -11,7 +11,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class GigaChatLLM:
-    """Клиент GigaChat с поддержкой function calling"""
+    """Клиент GigaChat с поддержкой"""
     
     def __init__(self, temperature: float = 0.3):
         self.api_url = "https://gigachat.devices.sberbank.ru/api/v1"
@@ -57,7 +57,7 @@ class GigaChatLLM:
     
     def call(self, prompt: str = None, messages: list = None, functions: list = None) -> dict:
         """
-        Генерация текста с поддержкой function calling
+        Генерация текста
         
         Args:
             prompt: простой текстовый запрос
@@ -112,25 +112,8 @@ if __name__ == "__main__":
     
     llm = GigaChatLLM()
     
-    # Простой тест
+    # Тест
     result = llm.call(prompt="Назови одним словом: что такое корреляция?")
     print(f"\nПростой запрос: {result['choices'][0]['message']['content']}")
-    
-    # Тест с function calling
-    test_functions = [{
-        "name": "get_weather",
-        "description": "Получить погоду в городе",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "city": {"type": "string", "description": "Название города"}
-            },
-            "required": ["city"]
-        }
-    }]
-    
-    messages = [{"role": "user", "content": "Какая погода в Москве?"}]
-    result2 = llm.call(messages=messages, functions=test_functions)
-    print(f"\nС function calling: {result2}")
-    
+        
     print("\nТест завершен")

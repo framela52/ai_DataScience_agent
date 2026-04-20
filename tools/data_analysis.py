@@ -8,7 +8,6 @@ def analyze_correlation(data_description: str) -> str:
     """
     Анализ корреляции между переменными. 
     Формат: 'x_переменная,y_переменная,значение1,значение2,значение3,...'
-    Пример: 'образование,доход,10,30,12,35,14,40,16,50,18,60'
     """
     try:
         # Очищаем входные данные
@@ -24,10 +23,10 @@ def analyze_correlation(data_description: str) -> str:
                 y_vals = [float(y) for y in numbers[half:2*half]]
                 return f"Корреляция: r = {np.corrcoef(x_vals, y_vals)[0,1]:.3f}. {'Сильная' if abs(np.corrcoef(x_vals, y_vals)[0,1])>0.7 else 'Умеренная' if abs(np.corrcoef(x_vals, y_vals)[0,1])>0.3 else 'Слабая'} связь."
         
-        # Стандартный формат: x_name,y_name,value1,value2,...
+        
         parts = data_description.split(',')
         if len(parts) < 4:
-            return "Ошибка: нужны x_переменная,y_переменная,значения. Пример: 'образование,доход,10,30,12,35,14,40'"
+            return "Ошибка: нужны x_переменная,y_переменная,значения."
         
         x_name = parts[0].strip()
         y_name = parts[1].strip()
@@ -80,4 +79,3 @@ if __name__ == "__main__":
     print("Тестирование инструментов анализа данных...")
     corr = analyze_correlation("ИПЦ,Продажи,2.1,100,2.2,105,2.0,98")
     assert "r =" in corr
-    print("УСПЕШНО: оба инструмента работают")

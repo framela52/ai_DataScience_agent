@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from ddgs import DDGS  # Изменен импорт
+from ddgs import DDGS 
 
 @tool
 def web_search(query: str) -> str:
@@ -29,7 +29,6 @@ def web_search(query: str) -> str:
 if __name__ == "__main__":
     print("Тестирование веб-поиска через DuckDuckGo...")
     
-    # Используем .invoke вместо прямого вызова (рекомендация LangChain)
     result = web_search.invoke({"query": "ИПЦ Европа 2025"})
     
     print(f"Результат поиска (первые 500 символов):\n{result[:500]}")
@@ -37,4 +36,4 @@ if __name__ == "__main__":
     if result and len(result) > 50:
         print("\nТест пройден! Поиск работает.")
     else:
-        print("\nТест не пройден. Проверьте подключение к интернету.")
+        print("\nТест не пройден")

@@ -1,7 +1,7 @@
 """
 Веб-интерфейс для агента аналитика данных
 С отображением рассуждений и веб-поиском
-Запуск: python web_app.py
+Запуск: python app.py
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
